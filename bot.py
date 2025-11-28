@@ -23,4 +23,32 @@ def ban_user(message):
     else:
         bot.reply_to(message, "Эта команда должна быть использована в ответ на сообщение пользователя, которого вы хотите забанить.")
 
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    text = message.text or ""
+    if "https://" in text:
+        user_id = message.from_user.id
+        with open("banned_users.log", "a", encoding="utf-8") as f:
+            f.write(f"{user_id}\n")
+        try:
+            bot.ban_chat_member(message.chat.id, user_id)
+            bot.reply_to(message, "Вы заблокированы за отправку запрещённых сылок.")
+        except Exception as e:
+            bot.reply_to(message, f"Не удалось заблокировать: {e}")
+    else:
+        bot.reply_to(message, "Сообщение принято.")
+
+@bot.message_handler(content_types=['new_chat_members'])
+def make_some(message):
+    bot.send_message(message.chat.id, 'I accepted a new user!')
+    bot.approve_chat_join_request(message.chat.id, message.from_user.id)
+
+
+
+
+
+
+
 bot.infinity_polling(none_stop=True)
+
+
